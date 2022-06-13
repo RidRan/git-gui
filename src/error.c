@@ -1,8 +1,13 @@
 #include <stdio.h>
 #include <string.h>
 
-void ThrowError(char *message, char *file, int line, int critical) {
-    printf("%s in %s at line %d", message, file, line);
+typedef enum bool {
+    false,
+    true
+} bool;
+
+void ThrowError(char *message, char *file, int line, bool critical) {
+    printf("%s in %s at line %d\n", message, file, line);
     if (critical) {
         exit(critical);
     }

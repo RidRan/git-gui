@@ -1,5 +1,5 @@
 #include "point.c"
-#include "error.c"
+#include "image.c"
 
 typedef struct Object {
     char *name;
@@ -8,25 +8,24 @@ typedef struct Object {
     Point pivot;
     int width;
     int height;
-    pixel *pixels;
+    Image *image;
 } Object;
 
-Object *CreateObject(char *name, Point position, int order, Point pivot, int width, int height, pixel *pixels) {
+Object *CreateObject(char *name, Point position, int order, Point pivot, int width, int height, Image *image) {
     Object *object = (Object *) malloc(sizeof(Object));
-
     object->name = name;
     object->position = position;
     object->order = order;
     object->pivot = pivot;
     object->width = width;
     object->height = height;
-    object->pixels = pixels;
+    object->image = image;
 
     return object;
 }
 
 void ClearObject(Object *object) {
-    free(object->pixels);
+    ClearImage(object->image);
     free(object);
 }
 
@@ -93,4 +92,33 @@ int AddObject(ObjectList *objectList, Object *o) {
 
     InsertObject(objectList, o, objectList->size);
     return objectList->size;
+}
+
+bool PositionWithinObject(Object *object, int x, int y) {
+    int objectX = object->position.x;
+    int objectY = object->position.y;
+    int objectWidth = object->width;
+    int objectHeight = object->height;
+
+    if (x >= objectX && 
+        x < objectX + objectWidth &&
+        y >= objectY &&
+        y < objectY + objectHeight) 
+    {
+        return true;
+    }
+
+    return false;
+}
+
+Object *ObjectAtPosition(ObjectList *objectList, int x, int y) {
+    int i;
+    for (i = 0; i < objectList->size; i++) {
+        Object *object = &objectList->objects[i];
+        if (PositionWithinObject(object, x, y)) {
+            return object;
+        }
+    }
+
+    return NULL;
 }

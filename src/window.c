@@ -18,9 +18,11 @@ void DrawScreenToDisplay(HWND hwnd) {
     
     GetClientRect(hwnd, &rcClient);
 
-    HBITMAP hbmp = CreateBitmap(SCREEN_WIDTH, SCREEN_HEIGHT, 1, 8*4, screen);
+    HBITMAP hbmp = CreateBitmap(screen->width, screen->height, 1, 8*4, screen->pixels);
     SelectObject(sdc, hbmp);
     StretchBlt(hdc, 0, 0, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top, sdc, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SRCCOPY);
+
+	ResetScreen();
 
     DeleteDC(sdc);
     ReleaseDC(hwnd, hdc);
@@ -71,9 +73,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       	break;
 		case WM_GETMINMAXINFO:
 		{
-			LPMINMAXINFO lpMMI = (LPMINMAXINFO)lParam;
-			lpMMI->ptMinTrackSize.x = SCREEN_WIDTH + marginX;
-			lpMMI->ptMinTrackSize.y = SCREEN_HEIGHT + marginY;
+			// LPMINMAXINFO lpMMI = (LPMINMAXINFO)lParam;
+			// lpMMI->ptMinTrackSize.x = SCREEN_WIDTH + marginX;
+			// lpMMI->ptMinTrackSize.y = SCREEN_HEIGHT + marginY;
 		}
 		break;
 
@@ -117,9 +119,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			int x = LOWORD(lParam);
 			int y = HIWORD(lParam);
+
+			GetClientRect(hwnd, &rcClient); 
 	
-            x = x * SCREEN_WIDTH / (rcClient.right - rcClient.left) - rcClient.left;
-            y = y * SCREEN_HEIGHT / (rcClient.bottom - rcClient.top) - rcClient.top;
+            x = x * screen->width / (rcClient.right - rcClient.left) - rcClient.left + originOffset.x;
+            y = y * screen->height / (rcClient.bottom - rcClient.top) - rcClient.top + originOffset.y;
 
 			onMouseMove(x, y);
 		}
@@ -129,8 +133,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             int x = LOWORD(lParam);
 			int y = HIWORD(lParam);
 	
-            x = x * SCREEN_WIDTH / (rcClient.right - rcClient.left) - rcClient.left;
-            y = y * SCREEN_HEIGHT / (rcClient.bottom - rcClient.top) - rcClient.top;
+            x = x * screen->width / (rcClient.right - rcClient.left) - rcClient.left + originOffset.x;
+            y = y * screen->height / (rcClient.bottom - rcClient.top) - rcClient.top + originOffset.y;
 
             onMouseLeftDown(x, y);
         }
@@ -140,8 +144,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			int x = LOWORD(lParam);
 			int y = HIWORD(lParam);
 	
-            x = x * SCREEN_WIDTH / (rcClient.right - rcClient.left) - rcClient.left;
-            y = y * SCREEN_HEIGHT / (rcClient.bottom - rcClient.top) - rcClient.top;
+            x = x * screen->width / (rcClient.right - rcClient.left) - rcClient.left;
+            y = y * screen->height / (rcClient.bottom - rcClient.top) - rcClient.top;
 
             onMouseLeftUp(x, y);
         }
@@ -172,7 +176,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			printf("Key up: 0x%x\n", wParam);
 		break;
 		case WM_CHAR:
-			printf("Key char: %c\n", (char) wParam);
+			onKeyPress((char) wParam);
 		break;
 		
 		default:

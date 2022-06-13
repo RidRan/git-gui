@@ -1,13 +1,12 @@
-#include "image.c"
 #include "object.c"
 
 #include <stdlib.h>
 #include <stdio.h>
 
-const int SCREEN_WIDTH = 1280;
-const int SCREEN_HEIGHT = 800;
+const int SCREEN_WIDTH = 400;
+const int SCREEN_HEIGHT = 250;
 
-pixel *screen;
+Image *screen;
 
 Point originOffset;
 
@@ -18,11 +17,17 @@ ObjectList *ui;
 ObjectList *text;
 
 void CreateScreen() {
-    screen = CreatePixels(SCREEN_WIDTH, SCREEN_HEIGHT);
-    for (int i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT; i++) {
-        screen[i] = 0x00000000;
+    screen = CreateImage(SCREEN_WIDTH, SCREEN_HEIGHT);
+    for (int i = 0; i < screen->width * screen->height; i++) {
+        screen->pixels[i] = 0x00000000;
     }
 	originOffset = CreatePoint(0, 0);
+}
+
+void ResetScreen() {
+	for (int i = 0; i < screen->width * screen->height; i++) {
+        screen->pixels[i] = 0x00000000;
+    }
 }
 
 void CreateLayers() {
@@ -33,21 +38,27 @@ void CreateLayers() {
 	text = CreateObjectList(1024);
 }
 
-int DrawObject(Object *object) {
+int DrawImage(Image *image, Point position) {
 	int i;
-	for (i = 0; i < object->width * object->height; i++) {
-		int x = object->position.x + i % object->width;
-		int y = object->position.y + i / object->width;
+	for (i = 0; i < image->width * image->height; i++) {
+		int x = position.x + i % image->width;
+		int y = position.y + i / image->width;
 
 		if (x >= originOffset.x &&
-			x < originOffset.x + SCREEN_WIDTH &&
+			x < originOffset.x + screen->width &&
 			y >= originOffset.y &&
-			y < originOffset.x + SCREEN_HEIGHT &&
-			object->pixels[i] != transparent) 
+			y < originOffset.x + screen->height &&
+			image->pixels[i] != transparent) 
 		{
-			screen[(y - originOffset.y) * SCREEN_WIDTH + x - originOffset.x] = object->pixels[i];
+			screen->pixels[(y - originOffset.y) * screen->width + x - originOffset.x] = image->pixels[i];
 		}
 	}
+
+	return image->width;
+}
+
+int DrawObject(Object *object) {
+	DrawImage(object->image, object->position);
 
 	return object->width;
 }
@@ -72,7 +83,7 @@ int screenIndex(int x, int y) {
 }
 
 void SetLayerPixel(pixel *layer, int x, int y, pixel c) {
-	if (x >= 0 && x < SCREEN_WIDTH && y >= 0 && y < SCREEN_HEIGHT) {
+	if (x >= 0 && x < screen->width && y >= 0 && y < screen->height) {
 		layer[screenIndex(x, y)] = c;
 	}
 }
