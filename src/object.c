@@ -1,5 +1,5 @@
 #include "point.c"
-#include "image.c"
+#include "font.c"
 
 typedef struct Object {
     char *name;

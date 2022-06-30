@@ -48,7 +48,7 @@ int DrawImage(Image *image, Point position) {
 			x < originOffset.x + screen->width &&
 			y >= originOffset.y &&
 			y < originOffset.x + screen->height &&
-			image->pixels[i] != transparent) 
+			image->pixels[i] != TRANSPARENT) 
 		{
 			screen->pixels[(y - originOffset.y) * screen->width + x - originOffset.x] = image->pixels[i];
 		}
